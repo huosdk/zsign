@@ -53,6 +53,35 @@ int usage()
 	return -1;
 }
 
+
+std::vector<string> splitString(std::string data,std::string split){
+    std::vector<string> vector;
+    char dest[data.length()];
+    strcpy(dest,data.c_str());
+    char *p;
+    p = strtok (dest,split.c_str());
+    while(p!=NULL) {
+        string value=p;
+        vector.push_back(value);
+        p = strtok(NULL,split.c_str());
+    }
+
+    return vector;
+}
+
+std::map<string, string> readInfoParams(std::string addInfo){
+    
+    std:map<string, string> infoMap;
+    std::vector<string> vector=splitString(addInfo, ";");
+    for(int i=0;i<vector.size();i++)//size()容器中实际数据个数
+    {
+        std::vector<string> keyValueVector=splitString(vector[i], ":");
+        for(int j=0;j<keyValueVector.size();j+=2){
+            infoMap[keyValueVector[j]]=keyValueVector[j+1];
+        }
+    }
+    return infoMap;
+}
 int main(int argc, char *argv[])
 {
 	ZTimer gtimer;
@@ -154,19 +183,21 @@ int main(int argc, char *argv[])
 			ZLog::DebugV(">>> Argument:\t%s\n", argv[i]);
 		}
 	}
-    std:map<string, string> infoMap;
-    //解析addinfo 成map
-    if(!addInfo.empty()){
-        NSData *data= [[NSString stringWithUTF8String:addInfo.c_str()] dataUsingEncoding:NSUTF8StringEncoding];
-        if(data!=NULL){
-            NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-            if(dict!=NULL){
-                for (NSString *key in dict){
-                    infoMap[[key UTF8String]] = [dict[key] UTF8String];
-                }
-            }
-        }
-    }
+    std::map<string, string> infoMap = readInfoParams(addInfo);
+    
+//    //解析addinfo 成map
+//    if(!addInfo.empty()){
+//
+//        NSData *data= [[NSString stringWithUTF8String:addInfo.c_str()] dataUsingEncoding:NSUTF8StringEncoding];
+//        if(data!=NULL){
+//            NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+//            if(dict!=NULL){
+//                for (NSString *key in dict){
+//                    infoMap[[key UTF8String]] = [dict[key] UTF8String];
+//                }
+//            }
+//        }
+//    }
 	string strPath = GetCanonicalizePath(argv[optind]);
 	if (!IsFileExists(strPath.c_str()))
 	{
