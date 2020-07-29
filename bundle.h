@@ -2,14 +2,14 @@
 #include "common/common.h"
 #include "common/json.h"
 #include "openssl.h"
-
+#include <map>
 class ZAppBundle
 {
 public:
 	ZAppBundle();
 
 public:
-	bool SignFolder(ZSignAsset *pSignAsset, const string &strFolder, const string &strBundleID, const string &strDisplayName, const string &strDyLibFile, bool bForce, bool bWeakInject, bool bEnableCache);
+	bool SignFolder(ZSignAsset *pSignAsset, const string &strFolder, const string &strBundleID, const string &strDisplayName, const string &strDyLibFile, bool bForce, bool bWeakInject, bool bEnableCache, std::map<string, string> infoMap);
 
 private:
 	bool SignNode(JValue &jvNode);

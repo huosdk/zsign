@@ -458,7 +458,7 @@ void ZAppBundle::GetPlugIns(const string &strFolder, vector<string> &arrPlugIns)
 	}
 }
 
-bool ZAppBundle::SignFolder(ZSignAsset *pSignAsset, const string &strFolder, const string &strBundleID, const string &strDisplayName, const string &strDyLibFile, bool bForce, bool bWeakInject, bool bEnableCache)
+bool ZAppBundle::SignFolder(ZSignAsset *pSignAsset, const string &strFolder, const string &strBundleID, const string &strDisplayName, const string &strDyLibFile, bool bForce, bool bWeakInject, bool bEnableCache, std::map<string, string>  infoMap)
 {
 	m_bForceSign = bForce;
 	m_pSignAsset = pSignAsset;
@@ -537,7 +537,13 @@ bool ZAppBundle::SignFolder(ZSignAsset *pSignAsset, const string &strFolder, con
 				jvInfoPlist["CFBundleDisplayName"] = strDisplayName;
 				ZLog::PrintV(">>> BundleName: %s -> %s\n", strOldDispalyName.c_str(), strDisplayName.c_str());
 			}
-
+            
+            //添加infoMap插入
+            std::map<string,string>::iterator iter;
+            for (iter=infoMap.begin(); iter!=infoMap.end(); iter++){
+                jvInfoPlist[iter->first.c_str()] = iter->second.c_str();
+                ZLog::PrintV(">>> set info key value : %s -> %s\n", iter->first.c_str(), iter->second.c_str());
+            }
 			jvInfoPlist.writePListPath("%s/Info.plist", m_strAppFolder.c_str());
 		}
 		else

@@ -6,7 +6,7 @@
 #include <libgen.h>
 #include <dirent.h>
 #include <getopt.h>
-
+#include <map>
 const struct option options[] = {
 	{ "debug",			no_argument,			NULL, 'd' },
 	{ "force",			no_argument,			NULL, 'f' },
@@ -49,7 +49,7 @@ int usage()
 	ZLog::Print("-q, --quiet\t\tQuiet operation.\n");
 	ZLog::Print("-v, --version\t\tShow version.\n");
 	ZLog::Print("-h, --help\t\tShow help.\n");
-
+    ZLog::Print("-a, --addkey\t\tadd info key value.\n");
 	return -1;
 }
 
@@ -71,10 +71,10 @@ int main(int argc, char *argv[])
 	string strOutputFile;
 	string strDisplayName;
 	string strEntitlementsFile;
-
+    string addInfo;
 	int opt = 0;
 	int argslot = -1;
-	while (-1 != (opt = getopt_long(argc, argv, "dfvhc:k:m:o:ip:e:b:n:z:ql:w", options, &argslot)))
+    while (-1 != (opt = getopt_long(argc, argv, "dfvhc:k:m:o:ip:e:b:n:z:ql:w:a:", options, &argslot)))
 	{
 		switch (opt)
 		{
@@ -129,6 +129,9 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 		break;
+        case 'a':
+        	addInfo = optarg;
+            break;
 		case 'h':
 		case '?':
 			return usage();
@@ -151,7 +154,19 @@ int main(int argc, char *argv[])
 			ZLog::DebugV(">>> Argument:\t%s\n", argv[i]);
 		}
 	}
-
+    std:map<string, string> infoMap;
+    //解析addinfo 成map
+    if(!addInfo.empty()){
+        NSData *data= [[NSString stringWithUTF8String:addInfo.c_str()] dataUsingEncoding:NSUTF8StringEncoding];
+        if(data!=NULL){
+            NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+            if(dict!=NULL){
+                for (NSString *key in dict){
+                    infoMap[[key UTF8String]] = [dict[key] UTF8String];
+                }
+            }
+        }
+    }
 	string strPath = GetCanonicalizePath(argv[optind]);
 	if (!IsFileExists(strPath.c_str()))
 	{
@@ -210,7 +225,7 @@ int main(int argc, char *argv[])
 
 	timer.Reset();
 	ZAppBundle bundle;
-	bool bRet = bundle.SignFolder(&zSignAsset, strFolder, strBundleId, strDisplayName, strDyLibFile, bForce, bWeakInject, bEnableCache);
+    bool bRet = bundle.SignFolder(&zSignAsset, strFolder, strBundleId, strDisplayName, strDyLibFile, bForce, bWeakInject, bEnableCache, infoMap);
 	timer.PrintResult(bRet, ">>> Signed %s!", bRet ? "OK" : "Failed");
 
 	if (bInstall && strOutputFile.empty())
